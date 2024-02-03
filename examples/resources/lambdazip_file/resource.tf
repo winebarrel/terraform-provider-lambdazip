@@ -1,14 +1,3 @@
-# terraform-provider-lambdazip
-
-[![CI](https://github.com/winebarrel/terraform-provider-lambdazip/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/terraform-provider-lambdazip/actions/workflows/ci.yml)
-
-Terraform provider creating zip file for AWS Lambda.
-
-Update base64sha256 only when trigger attribute is updated.
-
-## Usage
-
-```tf
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
   source        = "**"
@@ -53,4 +42,3 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
   role       = aws_iam_role.lambda_app_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-```
