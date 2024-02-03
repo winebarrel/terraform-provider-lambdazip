@@ -16,15 +16,11 @@ data "lambdazip_files_sha256" "triggers" {
   ]
 }
 
-resource "lambdazip_file" "node_program" {
+resource "lambdazip_file" "app" {
   base_dir      = "lambda"
   source        = "**"
-  excludes      = [".*", "README.md"]
+  excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
-  triggers      = data.lambdazip_files_sha256.triggers.map
-}
-
-output "zip_sha256" {
-  value = lambdazip_file.node_program.base64sha256
+  triggers      = data.lambdazip_files_sha256.map
 }

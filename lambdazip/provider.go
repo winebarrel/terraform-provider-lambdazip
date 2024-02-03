@@ -9,5 +9,8 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"lambdazip_file": resourceFile(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"lambdazip_files_sha256": dataSourceFilesSha256(),
+		},
 	}
 }
