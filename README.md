@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 ## Run locally for development
 
 ```sh
-cp cronplan.tf.sample cronplan.tf
+cp lambdazip.tf.sample lambdazip.tf
 make tf-plan
 make tf-apply
 ```
