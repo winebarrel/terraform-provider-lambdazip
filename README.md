@@ -5,7 +5,7 @@
 
 Terraform provider creating zip file for AWS Lambda.
 
-Update base64sha256 only when trigger attribute is updated.
+Update `base64sha256` attribute only when `triggers` attribute is updated.
 
 ## Usage
 
