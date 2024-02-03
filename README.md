@@ -16,7 +16,7 @@ Update `base64sha256` attribute only when `triggers` attribute is updated.
 |   |-- node_modules/
 |   |-- package-lock.json
 |   `-- package.json
-`-- main.rf
+`-- main.tf
 ```
 
 ```tf
