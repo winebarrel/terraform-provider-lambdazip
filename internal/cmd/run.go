@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func Run(cmdline string) (string, error) {
-	cmdArgs, err := shellwords.Parse(cmdline)
+	envs, args, err := shellwords.ParseWithEnvs(cmdline)
 
 	if err != nil {
 		return "", err
@@ -16,14 +17,18 @@ func Run(cmdline string) (string, error) {
 
 	var cmd *exec.Cmd
 
-	if len(cmdArgs) > 1 {
-		cmd = exec.Command(cmdArgs[0], cmdArgs[1:]...)
+	if len(args) > 1 {
+		cmd = exec.Command(args[0], args[1:]...)
 	} else {
-		cmd = exec.Command(cmdArgs[0])
+		cmd = exec.Command(args[0])
+	}
+
+	if len(envs) > 0 {
+		cmd.Env = append(os.Environ(), envs...)
 	}
 
 	buf, err := cmd.CombinedOutput()
-	out := strings.TrimSpace(string(buf))
+	out := strings.TrimSpace(string(buf)) + "\n"
 
 	return out, err
 }
