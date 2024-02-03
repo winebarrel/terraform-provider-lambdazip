@@ -1,3 +1,14 @@
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+provider "lambdazip" {
+}
+
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
   source        = "**"

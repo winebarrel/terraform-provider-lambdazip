@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
 provider "lambdazip" {
 }
 
