@@ -10,16 +10,16 @@ provider "lambdazip" {
 }
 
 resource "lambdazip_file" "node_program" {
-  base_dir      = "example"
+  base_dir      = "example-app"
   source        = "**"
   excludes      = [".*", "README.md"]
   output        = "my-program.zip"
   before_create = "npm i"
 
   triggers = [
-    filesha256("example/main.js"),
-    filesha256("example/package.json"),
-    filesha256("example/package-lock.json"),
+    filesha256("example-app/index.js"),
+    filesha256("example-app/package.json"),
+    filesha256("example-app/package-lock.json"),
   ]
 }
 

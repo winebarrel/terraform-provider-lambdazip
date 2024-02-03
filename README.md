@@ -55,3 +55,11 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 ```
+
+## Run locally for development
+
+```sh
+cp cronplan.tf.sample cronplan.tf
+make tf-plan
+make tf-apply
+```

@@ -6,7 +6,7 @@ resource "lambdazip_file" "app" {
   before_create = "npm i"
 
   triggers = [
-    filesha256("example/main.js"),
+    filesha256("example/index.js"),
     filesha256("example/package.json"),
     filesha256("example/package-lock.json"),
   ]
