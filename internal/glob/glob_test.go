@@ -26,12 +26,12 @@ func TestGlob(_t *testing.T) {
 	os.WriteFile("app/.gitignore", []byte("*.dylib"), 0644)
 
 	tt := []struct {
-		pattern  string
+		pattern  []string
 		excludes []string
 		expected []string
 	}{
 		{
-			pattern:  "**",
+			pattern:  []string{"**"},
 			excludes: []string{},
 			expected: []string{
 				"app/.gitignore",
@@ -42,7 +42,7 @@ func TestGlob(_t *testing.T) {
 			},
 		},
 		{
-			pattern:  "**/*.rb",
+			pattern:  []string{"**/*.rb"},
 			excludes: []string{},
 			expected: []string{
 				"app/hello.rb",
@@ -51,7 +51,7 @@ func TestGlob(_t *testing.T) {
 			},
 		},
 		{
-			pattern: "**",
+			pattern: []string{"**"},
 			excludes: []string{
 				"app/.*",
 				"app/*.md",
@@ -60,6 +60,14 @@ func TestGlob(_t *testing.T) {
 				"app/hello.rb",
 				"app/lib/const.rb",
 				"app/world.rb",
+			},
+		},
+		{
+			pattern:  []string{"app/*.rb", "**/*.md"},
+			excludes: []string{"app/world.*"},
+			expected: []string{
+				"app/README.md",
+				"app/hello.rb",
 			},
 		},
 	}

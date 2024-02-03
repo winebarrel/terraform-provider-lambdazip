@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/cmd"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/glob"
@@ -108,7 +109,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 	}
 
-	sources, err := glob.Glob(source, excludes)
+	sources, err := glob.Glob([]string{source}, excludes)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,7 +132,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	}
 
 	d.Set("base64sha256", base64Sha256) //nolint:errcheck
-	d.SetId(output)
+	d.SetId(id.UniqueId())
 
 	return nil
 }

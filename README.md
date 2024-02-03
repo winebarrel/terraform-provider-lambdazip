@@ -31,20 +31,28 @@ terraform {
 provider "lambdazip" {
 }
 
+data "lambdazip_files_sha256" "triggers" {
+  files = [
+    "lambda/*.js",
+    "lambda/*.json",
+  ]
+}
+
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
   source        = "**"
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
+  triggers      = data.lambdazip_files_sha256.triggers.map
 
-  triggers = {
-    for i in [
-      "lambda/index.js",
-      "lambda/package.json",
-      "lambda/package-lock.json",
-    ] : i => filesha256(i)
-  }
+  # triggers = {
+  #   for i in [
+  #     "lambda/index.js",
+  #     "lambda/package.json",
+  #     "lambda/package-lock.json",
+  #   ] : i => filesha256(i)
+  # }
 }
 
 resource "aws_lambda_function" "app" {
