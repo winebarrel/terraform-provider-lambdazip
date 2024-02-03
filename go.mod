@@ -6,7 +6,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.32.0
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
