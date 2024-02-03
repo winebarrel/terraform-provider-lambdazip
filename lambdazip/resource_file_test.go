@@ -10,20 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const testFileConfigBasic = `
-resource "lambdazip_file" "my_app" {
-  base_dir      = "app"
-  source        = "**/*.rb"
-  excludes      = [".*", "README.md"]
-  output        = "my-app.zip"
-  before_create = "touch exec.txt"
-
-	triggers = [
-    filesha256("app/hello.rb"),
-  ]
-}
-`
-
 func TestFile_basic(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
