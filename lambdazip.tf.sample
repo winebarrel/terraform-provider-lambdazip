@@ -10,7 +10,7 @@ provider "lambdazip" {
 }
 
 resource "lambdazip_file" "node_program" {
-  base_dir      = "example-app"
+  base_dir      = "lambda"
   source        = "**"
   excludes      = [".*", "README.md"]
   output        = "my-program.zip"
@@ -18,9 +18,9 @@ resource "lambdazip_file" "node_program" {
 
   triggers = {
     for i in [
-      "example-app/index.js",
-      "example-app/package.json",
-      "example-app/package-lock.json",
+      "lambda/index.js",
+      "lambda/package.json",
+      "lambda/package-lock.json",
     ] : i => filesha256(i)
   }
 }

@@ -9,6 +9,16 @@ Update `base64sha256` attribute only when `triggers` attribute is updated.
 
 ## Usage
 
+```
+./
+|-- lambda/
+|   |-- index.js
+|   |-- node_modules/
+|   |-- package-lock.json
+|   `-- package.json
+`-- main.rf
+```
+
 ```tf
 terraform {
   required_providers {
@@ -30,9 +40,9 @@ resource "lambdazip_file" "app" {
 
   triggers = {
     for i in [
-      "example-app/index.js",
-      "example-app/package.json",
-      "example-app/package-lock.json",
+      "lambda/index.js",
+      "lambda/package.json",
+      "lambda/package-lock.json",
     ] : i => filesha256(i)
   }
 }
