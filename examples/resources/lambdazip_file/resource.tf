@@ -18,9 +18,9 @@ resource "lambdazip_file" "app" {
 
   triggers = {
     for i in [
-      "example-app/index.js",
-      "example-app/package.json",
-      "example-app/package-lock.json",
+      "lambda/index.js",
+      "lambda/package.json",
+      "lambda/package-lock.json",
     ] : i => filesha256(i)
   }
 }
