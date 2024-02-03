@@ -31,11 +31,13 @@ resource "lambdazip_file" "app" {
   output        = "lambda.zip"
   before_create = "npm i"
 
-  triggers = [
-    filesha256("example/index.js"),
-    filesha256("example/package.json"),
-    filesha256("example/package-lock.json"),
-  ]
+  triggers = {
+    for i in [
+      "example-app/index.js",
+      "example-app/package.json",
+      "example-app/package-lock.json",
+    ] : i => filesha256(i)
+  }
 }
 
 resource "aws_lambda_function" "app" {
@@ -77,7 +79,7 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 
 - `output` (String)
 - `source` (String)
-- `triggers` (List of String)
+- `triggers` (Map of String)
 
 ### Optional
 

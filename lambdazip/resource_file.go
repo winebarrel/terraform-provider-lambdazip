@@ -50,7 +50,7 @@ func resourceFile() *schema.Resource {
 				ForceNew: true,
 			},
 			"triggers": {
-				Type: schema.TypeList,
+				Type: schema.TypeMap,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

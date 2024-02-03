@@ -16,11 +16,13 @@ resource "lambdazip_file" "node_program" {
   output        = "my-program.zip"
   before_create = "npm i"
 
-  triggers = [
-    filesha256("example-app/index.js"),
-    filesha256("example-app/package.json"),
-    filesha256("example-app/package-lock.json"),
-  ]
+  triggers = {
+    for i in [
+      "example-app/index.js",
+      "example-app/package.json",
+      "example-app/package-lock.json",
+    ] : i => filesha256(i)
+  }
 }
 
 output "zip_sha256" {
