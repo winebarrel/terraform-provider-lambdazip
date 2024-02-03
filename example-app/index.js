@@ -1,6 +1,12 @@
-#! /usr/bin/env node
-var figlet = require("figlet");
+#!/usr/bin/env node
+const util = require("util");
+const figlet = util.promisify(require("figlet"));
 
-figlet("Hello", function (_err, data) {
+exports.handler = async (event, context) => {
+  const data = await figlet("Hello, lambdazip!");
   console.log(data);
-});
+};
+
+if (require?.main === module) {
+  exports.handler();
+}
