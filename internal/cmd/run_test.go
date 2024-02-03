@@ -23,7 +23,8 @@ func TestRun_OK(t *testing.T) {
 	out, err := cmd.Run("ls ./")
 	require.NoError(err)
 	assert.Equal(`hello.rb
-world.rb`, out)
+world.rb
+`, out)
 }
 
 func TestRun_Err(t *testing.T) {
@@ -40,4 +41,17 @@ func TestRun_Err(t *testing.T) {
 	out, err := cmd.Run("ls /not/exist")
 	require.Error(err)
 	assert.NotEmpty(out)
+}
+
+func TestRun_WithEnv(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	out, err := cmd.Run("FOO=bar ZOO=baz sh -c 'echo $FOO $ZOO'")
+	require.NoError(err)
+	assert.Equal("bar baz\n", out)
 }
