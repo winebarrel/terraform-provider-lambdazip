@@ -72,7 +72,7 @@ func readExpr(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 		return diag.FromErr(err)
 	}
 
-	d.Set("map", m)
+	d.Set("map", m) //nolint:errcheck
 	d.SetId(id.UniqueId())
 
 	return nil
