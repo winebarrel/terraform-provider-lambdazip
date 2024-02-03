@@ -39,9 +39,9 @@ func TestFile_basic(t *testing.T) {
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
 
-						triggers = [
-							filesha256("app/hello.rb"),
-						]
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -51,7 +51,7 @@ func TestFile_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "before_create", "touch exec.txt"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.0", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "a6p1iUHprlLD6/MDM7kHa9dhCuOmcPiBmU+JShrJ4Ro="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
@@ -75,9 +75,9 @@ func TestFile_basic(t *testing.T) {
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
 
-						triggers = [
-							filesha256("app/hello.rb"),
-						]
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
 					}
 				`,
 				PreConfig: func() {
@@ -93,7 +93,7 @@ func TestFile_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "before_create", "touch exec.txt"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.0", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "a6p1iUHprlLD6/MDM7kHa9dhCuOmcPiBmU+JShrJ4Ro="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
@@ -112,9 +112,9 @@ func TestFile_basic(t *testing.T) {
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
 
-						triggers = [
-							filesha256("app/hello.rb"),
-						]
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
 					}
 				`,
 				PreConfig: func() {
@@ -128,7 +128,7 @@ func TestFile_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "before_create", "touch exec.txt"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.0", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "55024qLWGJdd9NUOXG8Y/4xpeWuckpVC9VJE1ZZPQtA="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
@@ -152,9 +152,9 @@ func TestFile_basic(t *testing.T) {
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
 
-						triggers = [
-							filesha256("app/hello.rb"),
-						]
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
 					}
 				`,
 				PreConfig: func() {
@@ -174,7 +174,7 @@ func TestFile_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "before_create", "touch exec.txt"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.0", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "55024qLWGJdd9NUOXG8Y/4xpeWuckpVC9VJE1ZZPQtA="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
