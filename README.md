@@ -1,6 +1,7 @@
 # terraform-provider-lambdazip
 
 [![CI](https://github.com/winebarrel/terraform-provider-lambdazip/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/terraform-provider-lambdazip/actions/workflows/ci.yml)
+[![terraform docs](https://img.shields.io/badge/terraform-docs-%35835CC?logo=terraform)](https://registry.terraform.io/providers/winebarrel/lambdazip/latest/docs)
 
 Terraform provider creating zip file for AWS Lambda.
 
