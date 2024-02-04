@@ -16,14 +16,15 @@ description: |-
 terraform {
   required_providers {
     lambdazip = {
-      source = "winebarrel/lambdazip"
+      source  = "winebarrel/lambdazip"
+      version = ">= 0.5.0"
     }
   }
 }
 
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
-  source        = "**"
+  sources       = ["**"]
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
@@ -75,7 +76,7 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 ### Required
 
 - `output` (String)
-- `source` (String)
+- `sources` (List of String)
 - `triggers` (Map of String)
 
 ### Optional

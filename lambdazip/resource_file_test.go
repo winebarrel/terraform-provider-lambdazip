@@ -34,7 +34,7 @@ func TestFile_basic(t *testing.T) {
 				Config: `
 					resource "lambdazip_file" "my_app" {
 						base_dir      = "app"
-						source        = "**/*.rb"
+						sources       = ["**/*.rb"]
 						excludes      = [".*", "README.md"]
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
@@ -46,7 +46,9 @@ func TestFile_basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "source", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "1"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.0", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.#", "2"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.0", ".*"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
@@ -70,7 +72,7 @@ func TestFile_basic(t *testing.T) {
 				Config: `
 					resource "lambdazip_file" "my_app" {
 						base_dir      = "app"
-						source        = "**/*.rb"
+						sources       = ["**/*.rb"]
 						excludes      = [".*", "README.md"]
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
@@ -88,7 +90,9 @@ func TestFile_basic(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "source", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "1"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.0", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.#", "2"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.0", ".*"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
@@ -107,7 +111,7 @@ func TestFile_basic(t *testing.T) {
 				Config: `
 					resource "lambdazip_file" "my_app" {
 						base_dir      = "app"
-						source        = "**/*.rb"
+						sources       = ["**/*.rb"]
 						excludes      = [".*", "README.md"]
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
@@ -123,7 +127,9 @@ func TestFile_basic(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "source", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "1"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.0", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.#", "2"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.0", ".*"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
@@ -147,7 +153,7 @@ func TestFile_basic(t *testing.T) {
 				Config: `
 					resource "lambdazip_file" "my_app" {
 						base_dir      = "app"
-						source        = "**/*.rb"
+						sources       = ["**/*.rb"]
 						excludes      = [".*", "README.md"]
 						output        = "my-app.zip"
 						before_create = "touch exec.txt"
@@ -169,7 +175,9 @@ func TestFile_basic(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
-					resource.TestCheckResourceAttr("lambdazip_file.my_app", "source", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "1"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.0", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.#", "2"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.0", ".*"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
