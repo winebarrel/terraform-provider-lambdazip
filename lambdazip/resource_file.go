@@ -20,6 +20,7 @@ func resourceFile() *schema.Resource {
 		CreateContext: createFile,
 		ReadContext:   readFile,
 		DeleteContext: deleteFile,
+
 		Schema: map[string]*schema.Schema{
 			"base_dir": {
 				Type:     schema.TypeString,
@@ -27,8 +28,11 @@ func resourceFile() *schema.Resource {
 				Default:  "",
 				ForceNew: true,
 			},
-			"source": {
-				Type:     schema.TypeString,
+			"sources": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Required: true,
 				ForceNew: true,
 			},
@@ -84,7 +88,14 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
-	source := d.Get("source").(string)
+	sources := []string{}
+
+	if patterns, ok := d.GetOk("sources"); ok {
+		for _, pat := range patterns.([]any) {
+			sources = append(sources, pat.(string))
+		}
+	}
+
 	output := d.Get("output").(string)
 	excludes := []string{}
 
@@ -109,7 +120,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 	}
 
-	sources, err := glob.Glob([]string{source}, excludes)
+	sources, err = glob.Glob(sources, excludes)
 
 	if err != nil {
 		return diag.FromErr(err)

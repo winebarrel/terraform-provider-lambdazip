@@ -1,14 +1,15 @@
 terraform {
   required_providers {
     lambdazip = {
-      source = "winebarrel/lambdazip"
+      source  = "winebarrel/lambdazip"
+      version = ">= 0.5.0"
     }
   }
 }
 
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
-  source        = "**"
+  sources       = ["**"]
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
