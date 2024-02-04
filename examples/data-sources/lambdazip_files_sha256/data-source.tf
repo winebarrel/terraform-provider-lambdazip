@@ -6,9 +6,6 @@ terraform {
   }
 }
 
-provider "lambdazip" {
-}
-
 data "lambdazip_files_sha256" "triggers" {
   files = [
     "lambda/*.js",

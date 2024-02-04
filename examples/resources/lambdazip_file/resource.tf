@@ -6,9 +6,6 @@ terraform {
   }
 }
 
-provider "lambdazip" {
-}
-
 resource "lambdazip_file" "app" {
   base_dir      = "lambda"
   source        = "**"
