@@ -96,6 +96,10 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 	}
 
+	if len(sources) == 0 {
+		return diag.Errorf(`The attribute "sources" is required, but the list was empty.`)
+	}
+
 	output := d.Get("output").(string)
 	excludes := []string{}
 
