@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/glob"
@@ -77,4 +78,21 @@ func TestGlob(_t *testing.T) {
 		require.NoError(err)
 		assert.Equal(t.expected, files)
 	}
+}
+
+func TestGlobNotExist(_t *testing.T) {
+	assert := assert.New(_t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(_t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+
+	_, err := glob.Glob([]string{"app/hello.rb"}, []string{}, doublestar.WithFailOnPatternNotExist())
+	assert.NoError(err)
+
+	_, err = glob.Glob([]string{"app/hellox.rb"}, []string{}, doublestar.WithFailOnPatternNotExist())
+	assert.ErrorContains(err, "pattern does not exist")
 }

@@ -6,13 +6,16 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
-func Glob(patterns []string, excludes []string) ([]string, error) {
+func Glob(patterns []string, excludes []string, opts ...doublestar.GlobOption) ([]string, error) {
 	fileSet := map[string]struct{}{}
 
+	opts = append(opts,
+		doublestar.WithFilesOnly(),
+		doublestar.WithFailOnIOErrors(),
+	)
+
 	for _, pat := range patterns {
-		matches, err := doublestar.FilepathGlob(pat,
-			doublestar.WithFilesOnly(),
-			doublestar.WithFailOnIOErrors())
+		matches, err := doublestar.FilepathGlob(pat, opts...)
 
 		if err != nil {
 			return nil, err

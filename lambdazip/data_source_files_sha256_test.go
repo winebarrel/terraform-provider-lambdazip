@@ -2,6 +2,7 @@ package lambdazip_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -90,6 +91,57 @@ func TestFilesSha256_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.%", "2"),
 					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/hello.rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/lib/const.rb", "62ed3c7896eb965afcfabafe23828a526fcc4fdc8c9e43ed65f3ffecf140036f"),
+				),
+			},
+		},
+	})
+}
+
+func TestFilesSha256_notExist(t *testing.T) {
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testProviders,
+		Steps: []resource.TestStep{
+			// Step 1 =====================================================
+			{
+				Config: `
+					data "lambdazip_files_sha256" "trigger" {
+						files = ["app/hello.rb"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "allow_not_exist", "false"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.%", "1"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/hello.rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+				),
+			},
+			// Step 2 =====================================================
+			{
+				Config: `
+					data "lambdazip_files_sha256" "trigger" {
+						files = ["app/xhello.rb"]
+					}
+				`,
+				ExpectError: regexp.MustCompile(`pattern does not exist`),
+			},
+			// Step 3 =====================================================
+			{
+				Config: `
+					data "lambdazip_files_sha256" "trigger" {
+						files           = ["app/xhello.rb"]
+						allow_not_exist = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "allow_not_exist", "true"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.%", "0"),
 				),
 			},
 		},
