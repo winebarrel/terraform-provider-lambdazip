@@ -1,5 +1,5 @@
 .PHONY: build
-build: vet
+build: vet test
 	go build
 
 .PHONY: vet

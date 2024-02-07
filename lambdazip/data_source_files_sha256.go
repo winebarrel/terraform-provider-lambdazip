@@ -3,6 +3,7 @@ package lambdazip
 import (
 	"context"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -35,6 +36,11 @@ func dataSourceFilesSha256() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"allow_not_exist": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -60,7 +66,13 @@ func readExpr(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 		}
 	}
 
-	files, err := glob.Glob(files, excludes)
+	globOpts := []doublestar.GlobOption{}
+
+	if !d.Get("allow_not_exist").(bool) {
+		globOpts = append(globOpts, doublestar.WithFailOnPatternNotExist())
+	}
+
+	files, err := glob.Glob(files, excludes, globOpts...)
 
 	if err != nil {
 		return diag.FromErr(err)
