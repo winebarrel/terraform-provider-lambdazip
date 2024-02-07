@@ -48,6 +48,7 @@ resource "lambdazip_file" "app" {
 
 ### Optional
 
+- `allow_not_exist` (Boolean)
 - `excludes` (List of String)
 
 ### Read-Only
