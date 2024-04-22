@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.6.1
-	github.com/hashicorp/terraform-plugin-docs v0.19.0
+	github.com/hashicorp/terraform-plugin-docs v0.19.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/stretchr/testify v1.9.0
