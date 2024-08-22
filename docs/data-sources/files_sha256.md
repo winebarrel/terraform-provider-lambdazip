@@ -35,7 +35,7 @@ resource "lambdazip_file" "app" {
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
-  triggers      = data.lambdazip_files_sha256.map
+  triggers      = data.lambdazip_files_sha256.triggers.map
 }
 ```
 
