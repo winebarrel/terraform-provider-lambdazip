@@ -110,6 +110,11 @@ resource "aws_lambda_function" "app" {
 }
 ```
 
+> [!note]
+> Go v1.21 or higher recommended.
+> see https://go.dev/blog/rebuild
+
+
 ## Run locally for development
 
 ```sh
