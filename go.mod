@@ -3,7 +3,7 @@ module github.com/winebarrel/terraform-provider-lambdazip
 go 1.23
 
 require (
-	github.com/bmatcuk/doublestar/v4 v4.8.0
+	github.com/bmatcuk/doublestar/v4 v4.8.1
 	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/mattn/go-shellwords v1.0.12
