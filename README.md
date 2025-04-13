@@ -85,7 +85,7 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 }
 ```
 
-###　Specify contents directly
+### Specify contents directly
 
 ```tf
 locals {
