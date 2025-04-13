@@ -6,7 +6,6 @@ toolchain go1.24.2
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.8.1
-	github.com/hashicorp/terraform-plugin-docs v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/stretchr/testify v1.10.0
@@ -45,6 +44,7 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.22.0 // indirect
 	github.com/hashicorp/terraform-json v0.24.0 // indirect
+	github.com/hashicorp/terraform-plugin-docs v0.21.0 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.26.0 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.4 // indirect
@@ -87,3 +87,5 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+tool github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs

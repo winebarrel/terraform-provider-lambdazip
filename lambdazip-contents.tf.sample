@@ -1,0 +1,34 @@
+locals {
+  index_js = <<-EOT
+    exports.handler = async () => {
+      console.log("hello, world");
+    };
+  EOT
+}
+
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+data "lambdazip_files_sha256" "triggers" {
+  contents = {
+    "index.js" = local.index_js
+  }
+}
+
+resource "lambdazip_file" "node_program" {
+  base_dir = "lambda"
+  contents = {
+    "index.js" = local.index_js
+  }
+  output   = "lambda.zip"
+  triggers = data.lambdazip_files_sha256.triggers.map
+}
+
+output "zip_sha256" {
+  value = lambdazip_file.node_program.base64sha256
+}

@@ -147,3 +147,37 @@ func TestFilesSha256_notExist(t *testing.T) {
 		},
 	})
 }
+
+func TestContentsSha256_basic(t *testing.T) {
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testProviders,
+		Steps: []resource.TestStep{
+			// Step 1 =====================================================
+			{
+				Config: `
+					data "lambdazip_files_sha256" "trigger" {
+						files = ["**"]
+						contents = {
+							"app/hello.rb"     = "puts 'world'"
+							"app/world.rb"     = "puts 'hello'"
+							"app/README.md"    = "# hello.rb"
+							"app/lib/const.rb" = "A = 100"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.%", "4"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/hello.rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/world.rb", "293c10e07909b3a823d7d2ba87c6cdf7400c9ed70132c2c952d7c8147d945a74"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/README.md", "29200c6da7d08c5115ad63fe7b9c542e5d8e8cf8a185f5cd49d2ce71fcde8d75"),
+					resource.TestCheckResourceAttr("data.lambdazip_files_sha256.trigger", "map.app/lib/const.rb", "62ed3c7896eb965afcfabafe23828a526fcc4fdc8c9e43ed65f3ffecf140036f"),
+				),
+			},
+		},
+	})
+}
