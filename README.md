@@ -103,10 +103,6 @@ resource "lambdazip_file" "node_program" {
   contents = {
     "index.js" = local.index_js
   }
-
-  triggers = {
-    "index.js" = sha256(local.index_js)
-  }
 }
 ```
 
