@@ -17,9 +17,24 @@ func dataSourceFilesSha256() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"files": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
+				},
+				AtLeastOneOf: []string{
+					"files",
+					"contents",
+				},
+			},
+			"contents": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				AtLeastOneOf: []string{
+					"files",
+					"contents",
 				},
 			},
 			"excludes": {
@@ -46,45 +61,62 @@ func dataSourceFilesSha256() *schema.Resource {
 }
 
 func readExpr(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	files := []string{}
+	mFiles := map[string]string{}
+	mContents := map[string]string{}
 
 	if patterns, ok := d.GetOk("files"); ok {
+		files := []string{}
+
 		for _, pat := range patterns.([]any) {
 			files = append(files, pat.(string))
 		}
-	}
 
-	if len(files) == 0 {
-		return diag.Errorf(`The attribute "files" is required, but the list was empty.`)
-	}
+		if len(files) == 0 {
+			return diag.Errorf(`The attribute "files" is required, but the list was empty.`)
+		}
 
-	excludes := []string{}
+		excludes := []string{}
 
-	if patterns, ok := d.GetOk("excludes"); ok {
-		for _, pat := range patterns.([]any) {
-			excludes = append(excludes, pat.(string))
+		if patterns, ok := d.GetOk("excludes"); ok {
+			for _, pat := range patterns.([]any) {
+				excludes = append(excludes, pat.(string))
+			}
+		}
+
+		globOpts := []doublestar.GlobOption{}
+
+		if !d.Get("allow_not_exist").(bool) {
+			globOpts = append(globOpts, doublestar.WithFailOnPatternNotExist())
+		}
+
+		files, err := glob.Glob(files, excludes, globOpts...)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		mFiles, err = hash.Sha256Map(files)
+
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	globOpts := []doublestar.GlobOption{}
+	if dataMap, ok := d.GetOk("contents"); ok {
+		dataByName := map[string]string{}
 
-	if !d.Get("allow_not_exist").(bool) {
-		globOpts = append(globOpts, doublestar.WithFailOnPatternNotExist())
+		for name, data := range dataMap.(map[string]any) {
+			dataByName[name] = data.(string)
+		}
+
+		mContents = hash.ContentsSha256Map(dataByName)
 	}
 
-	files, err := glob.Glob(files, excludes, globOpts...)
-
-	if err != nil {
-		return diag.FromErr(err)
+	for name, hash := range mContents {
+		mFiles[name] = hash
 	}
 
-	m, err := hash.Sha256Map(files)
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.Set("map", m) //nolint:errcheck
+	d.Set("map", mFiles) //nolint:errcheck
 	d.SetId(id.UniqueId())
 
 	return nil

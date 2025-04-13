@@ -14,13 +14,22 @@ resource "lambdazip_file" "app" {
   output        = "lambda.zip"
   before_create = "npm i"
 
-  triggers = {
-    for i in [
-      "lambda/index.js",
-      "lambda/package.json",
-      "lambda/package-lock.json",
-    ] : i => filesha256(i)
+  contents = {
+    extra_file = "Zap Zap Zap"
   }
+
+  triggers = merge(
+    {
+      for i in [
+        "lambda/index.js",
+        "lambda/package.json",
+        "lambda/package-lock.json",
+      ] : i => filesha256(i)
+    },
+    {
+      extra_file = sha256("Zap Zap Zap")
+    }
+  )
 }
 
 resource "aws_lambda_function" "app" {

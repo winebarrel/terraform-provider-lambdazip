@@ -43,3 +43,24 @@ func TestSha256Map(t *testing.T) {
 		"world.rb": "293c10e07909b3a823d7d2ba87c6cdf7400c9ed70132c2c952d7c8147d945a74",
 	}, m)
 }
+
+func TestContentsSha256Map(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.WriteFile("hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
+
+	m := hash.ContentsSha256Map(map[string]string{
+		"hello.rb": "puts 'world'",
+		"world.rb": "puts 'hello'",
+	})
+
+	assert.Equal(map[string]string{
+		"hello.rb": "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe",
+		"world.rb": "293c10e07909b3a823d7d2ba87c6cdf7400c9ed70132c2c952d7c8147d945a74",
+	}, m)
+}

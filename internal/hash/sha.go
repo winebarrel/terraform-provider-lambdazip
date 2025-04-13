@@ -37,3 +37,15 @@ func Sha256Map(files []string) (map[string]string, error) {
 
 	return m, nil
 }
+
+func ContentsSha256Map(contents map[string]string) map[string]string {
+	m := map[string]string{}
+
+	for name, data := range contents {
+		sha256Sum := sha256.Sum256([]byte(data))
+		h := hex.EncodeToString(sha256Sum[:])
+		m[name] = h
+	}
+
+	return m
+}

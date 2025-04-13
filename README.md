@@ -85,6 +85,31 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 }
 ```
 
+###　Specify contents directly
+
+```tf
+locals {
+  index_js = <<-EOT
+    exports.handler = async () => {
+      console.log("hello, world");
+    };
+  EOT
+}
+
+resource "lambdazip_file" "node_program" {
+  base_dir = "lambda"
+  output   = "lambda.zip"
+
+  contents = {
+    "index.js" = local.index_js
+  }
+
+  triggers = {
+    "index.js" = sha256(local.index_js)
+  }
+}
+```
+
 ### Golang example
 
 ```tf
@@ -119,6 +144,7 @@ resource "aws_lambda_function" "app" {
 
 ```sh
 cp lambdazip.tf.sample lambdazip.tf
+make
 make tf-plan
 make tf-apply
 ```

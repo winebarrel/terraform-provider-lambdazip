@@ -29,13 +29,22 @@ resource "lambdazip_file" "app" {
   output        = "lambda.zip"
   before_create = "npm i"
 
-  triggers = {
-    for i in [
-      "lambda/index.js",
-      "lambda/package.json",
-      "lambda/package-lock.json",
-    ] : i => filesha256(i)
+  contents = {
+    extra_file = "Zap Zap Zap"
   }
+
+  triggers = merge(
+    {
+      for i in [
+        "lambda/index.js",
+        "lambda/package.json",
+        "lambda/package-lock.json",
+      ] : i => filesha256(i)
+    },
+    {
+      extra_file = sha256("Zap Zap Zap")
+    }
+  )
 }
 
 resource "aws_lambda_function" "app" {
@@ -76,14 +85,15 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 ### Required
 
 - `output` (String)
-- `sources` (List of String)
 - `triggers` (Map of String)
 
 ### Optional
 
 - `base_dir` (String)
 - `before_create` (String)
+- `contents` (Map of String)
 - `excludes` (List of String)
+- `sources` (List of String)
 
 ### Read-Only
 
