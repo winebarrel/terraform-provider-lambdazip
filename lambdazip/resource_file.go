@@ -75,7 +75,7 @@ func resourceFile() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"base64sha256": {

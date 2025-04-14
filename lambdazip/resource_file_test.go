@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFile_basic(t *testing.T) {
+func TestFiles_basic(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -195,7 +195,7 @@ func TestFile_basic(t *testing.T) {
 	})
 }
 
-func TestContent_basic(t *testing.T) {
+func TestContents_basic(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -237,6 +237,42 @@ func TestContent_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/lib/const.rb", "A = 100"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3RvIR+rYfQjlytlx/hGPe2drWNSu59499c3uAKz6Kh4="),
+					func(*terraform.State) error {
+						buf, err := os.ReadFile("my-app.zip")
+						require.NoError(err)
+						assert.Equal("3RvIR+rYfQjlytlx/hGPe2drWNSu59499c3uAKz6Kh4=", base64Sha256(buf))
+						list, err := listZip(buf)
+						require.NoError(err)
+						assert.Equal([]string{"app/README.md", "app/hello.rb", "app/lib/const.rb", "app/world.rb"}, list)
+						return nil
+					},
+				),
+			},
+			// Step 2 =====================================================
+			{
+				Config: `
+					resource "lambdazip_file" "my_app" {
+						base_dir = "app"
+						contents = {
+							"app/hello.rb"     = "puts 'world'"
+							"app/world.rb"     = "puts 'hello'"
+							"app/README.md"    = "# hello.rb"
+							"app/lib/const.rb" = "A = 100"
+						}
+						output = "my-app.zip"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "0"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.%", "4"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", `contents.app/hello.rb`, "puts 'world'"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/hello.rb", "puts 'world'"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/README.md", "# hello.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/lib/const.rb", "A = 100"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
+					resource.TestCheckNoResourceAttr("lambdazip_file.my_app", "triggers"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3RvIR+rYfQjlytlx/hGPe2drWNSu59499c3uAKz6Kh4="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
