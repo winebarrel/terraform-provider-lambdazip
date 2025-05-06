@@ -2,7 +2,7 @@ module github.com/winebarrel/terraform-provider-lambdazip
 
 go 1.23.0
 
-toolchain go1.24.2
+toolchain go1.24.3
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.8.1
