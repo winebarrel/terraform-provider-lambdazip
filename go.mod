@@ -5,7 +5,7 @@ go 1.23.7
 toolchain go1.24.5
 
 require (
-	github.com/bmatcuk/doublestar/v4 v4.8.1
+	github.com/bmatcuk/doublestar/v4 v4.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/stretchr/testify v1.10.0
