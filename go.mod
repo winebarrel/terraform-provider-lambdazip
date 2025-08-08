@@ -8,6 +8,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.9.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/otiai10/copy v1.14.1
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -61,6 +62,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
@@ -84,6 +86,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

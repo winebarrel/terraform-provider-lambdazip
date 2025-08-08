@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	cp "github.com/otiai10/copy"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/cmd"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/glob"
 	"github.com/winebarrel/terraform-provider-lambdazip/internal/hash"
@@ -131,7 +132,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 
 		defer os.RemoveAll(tempDir)
-		err = os.CopyFS(tempDir, os.DirFS("."))
+		err = cp.Copy(".", tempDir)
 
 		if err != nil {
 			return diag.FromErr(err)
