@@ -2,6 +2,7 @@ package zip_test
 
 import (
 	"bytes"
+	"compress/flate"
 	"os"
 	"slices"
 	"testing"
@@ -43,7 +44,26 @@ func TestZip(t *testing.T) {
 	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
 
 	var out bytes.Buffer
-	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out)
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, -1)
+	require.NoError(err)
+
+	list := listZip(t, out.Bytes())
+	assert.Equal([]string{"hello.rb", "world.rb"}, list)
+}
+
+func TestZipWithBestCompression(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.WriteFile("hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
+
+	var out bytes.Buffer
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, flate.BestCompression)
 	require.NoError(err)
 
 	list := listZip(t, out.Bytes())
@@ -67,7 +87,7 @@ func TestZipWithContents(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	err := zip.Zip([]string{"hello.rb", "world.rb"}, contents, &out)
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, contents, &out, -1)
 	require.NoError(err)
 
 	list := listZip(t, out.Bytes())
@@ -85,7 +105,7 @@ func TestZipFile(t *testing.T) {
 	os.WriteFile("hello.rb", []byte("puts 'world'"), 0755)
 	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
 
-	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, nil, "app.zip")
+	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, nil, "app.zip", -1)
 	require.NoError(err)
 	buf, err := os.ReadFile("app.zip")
 	require.NoError(err)
@@ -110,7 +130,7 @@ func TestZipFileWithContents(t *testing.T) {
 		"world2.rb": "puts 'hello2'",
 	}
 
-	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, contents, "app.zip")
+	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, contents, "app.zip", -1)
 	require.NoError(err)
 	buf, err := os.ReadFile("app.zip")
 	require.NoError(err)

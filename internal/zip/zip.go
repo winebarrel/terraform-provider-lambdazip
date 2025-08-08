@@ -2,12 +2,13 @@ package zip
 
 import (
 	arzip "archive/zip"
+	"compress/flate"
 	"io"
 	"os"
 	"sort"
 )
 
-func ZipFile(files []string, contents map[string]string, name string) error {
+func ZipFile(files []string, contents map[string]string, name string, level int) error {
 	f, err := os.Create(name)
 
 	if err != nil {
@@ -16,11 +17,15 @@ func ZipFile(files []string, contents map[string]string, name string) error {
 
 	defer f.Close()
 
-	return Zip(files, contents, f)
+	return Zip(files, contents, f, level)
 }
 
-func Zip(files []string, contents map[string]string, out io.Writer) error {
+func Zip(files []string, contents map[string]string, out io.Writer, level int) error {
 	w := arzip.NewWriter(out)
+
+	w.RegisterCompressor(arzip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, level)
+	})
 
 	for _, name := range files {
 		f, err := w.Create(name)

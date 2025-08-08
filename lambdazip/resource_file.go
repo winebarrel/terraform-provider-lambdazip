@@ -88,6 +88,12 @@ func resourceFile() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
+			"compression_level": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  -1,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -96,6 +102,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	output := d.Get("output").(string)
 	baseDir := d.Get("base_dir").(string)
 	useTempDir := d.Get("use_temp_dir").(bool)
+	compressionLevel := d.Get("compression_level").(int)
 	cwd, err := os.Getwd()
 
 	if err != nil {
@@ -188,7 +195,7 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 	}
 
-	err = zip.ZipFile(sources, contents, output)
+	err = zip.ZipFile(sources, contents, output, compressionLevel)
 
 	if err != nil {
 		return diag.FromErr(err)
