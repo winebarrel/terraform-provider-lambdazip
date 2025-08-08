@@ -82,6 +82,12 @@ func resourceFile() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"use_temp_dir": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -89,10 +95,15 @@ func resourceFile() *schema.Resource {
 func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	output := d.Get("output").(string)
 	baseDir := d.Get("base_dir").(string)
+	useTempDir := d.Get("use_temp_dir").(bool)
 	cwd, err := os.Getwd()
 
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if !strings.HasPrefix(output, "/") {
+		output = filepath.Join(cwd, output)
 	}
 
 	if baseDir != "" {
@@ -103,10 +114,29 @@ func createFile(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 
 		defer os.Chdir(cwd) //nolint:errcheck
+	}
 
-		if !strings.HasPrefix("/", baseDir) {
-			output = filepath.Join(cwd, output)
+	if useTempDir {
+		tempDir, err := os.MkdirTemp("", "lambdazip")
+
+		if err != nil {
+			return diag.FromErr(err)
 		}
+
+		defer os.RemoveAll(tempDir)
+		err = os.CopyFS(tempDir, os.DirFS("."))
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = os.Chdir(tempDir)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		defer os.Chdir(cwd) //nolint:errcheck
 	}
 
 	sources := []string{}
