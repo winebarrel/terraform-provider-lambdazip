@@ -20,9 +20,6 @@ func resourceFile() *schema.Resource {
 		CreateContext: createFile,
 		ReadContext:   readFile,
 		DeleteContext: deleteFile,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
 
 		Schema: map[string]*schema.Schema{
 			"base_dir": {
