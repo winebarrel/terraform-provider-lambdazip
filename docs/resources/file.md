@@ -28,6 +28,7 @@ resource "lambdazip_file" "app" {
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
+  # use_temp_dir  = true
 
   contents = {
     extra_file = "Zap Zap Zap"
@@ -85,7 +86,6 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 ### Required
 
 - `output` (String)
-- `triggers` (Map of String)
 
 ### Optional
 
@@ -94,6 +94,8 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 - `contents` (Map of String)
 - `excludes` (List of String)
 - `sources` (List of String)
+- `triggers` (Map of String)
+- `use_temp_dir` (Boolean)
 
 ### Read-Only
 
