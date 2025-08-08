@@ -91,6 +91,7 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 
 - `base_dir` (String)
 - `before_create` (String)
+- `compression_level` (Number)
 - `contents` (Map of String)
 - `excludes` (List of String)
 - `sources` (List of String)
