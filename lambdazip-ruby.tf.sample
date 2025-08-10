@@ -1,0 +1,62 @@
+# vim: syntax=terraform
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+data "lambdazip_files_sha256" "rb_triggers" {
+  files = [
+    "lambda-src/ruby/lambda_function.rb",
+    "lambda-src/ruby/.bundle/config",
+    "lambda-src/ruby/Gemfile",
+    "lambda-src/ruby/Gemfile.lock",
+  ]
+}
+
+resource "lambdazip_file" "rb_zip" {
+  base_dir = "lambda-src/ruby"
+  sources = [
+    "lambda_function.rb",
+    "vendor/**",
+  ]
+  output        = "rb-lambda.zip"
+  before_create = "bundle install"
+  triggers      = data.lambdazip_files_sha256.rb_triggers.map
+}
+
+output "rb_zip_sha256" {
+  value = lambdazip_file.rb_zip.base64sha256
+}
+
+# # aws lambda invoke --function-name rb-lambda /dev/stdout
+# resource "aws_lambda_function" "rb_lambda" {
+#   filename         = lambdazip_file.rb_zip.output
+#   function_name    = "rb-lambda"
+#   role             = aws_iam_role.rb_lambda.arn
+#   handler          = "lambda_function.handler"
+#   source_code_hash = lambdazip_file.rb_zip.base64sha256
+#   runtime          = "ruby3.4"
+# }
+
+# resource "aws_iam_role" "rb_lambda" {
+#   name = "rb-lambda"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect    = "Allow"
+#         Principal = { Service = "lambda.amazonaws.com" }
+#         Action    = "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "rb_lambda" {
+#   role       = aws_iam_role.rb_lambda.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }
