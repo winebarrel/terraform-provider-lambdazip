@@ -1,0 +1,75 @@
+# vim: syntax=terraform
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+data "lambdazip_files_sha256" "py_triggers" {
+  files = [
+    "lambda-src/python/lambda_function.py",
+    "lambda-src/python/requirements.txt",
+  ]
+}
+
+resource "lambdazip_file" "py_zip" {
+  base_dir = "lambda-src/python"
+  sources  = ["**"]
+  excludes = [
+    "**/__pycache__/**",
+    "venv/**",
+    "ruff.toml",
+    ".ruff_cache/**",
+    "requirements.txt",
+  ]
+  output            = "py-lambda.zip"
+  triggers          = data.lambdazip_files_sha256.py_triggers.map
+  use_temp_dir      = true
+  compression_level = 9
+
+  before_create = <<-EOT
+    pip install -t .
+      --platform manylinux2014_x86_64
+      --implementation cp
+      --python-version 3.13
+      --only-binary=:all:
+      -r requirements.txt
+  EOT
+}
+
+output "py_zip_sha256" {
+  value = lambdazip_file.py_zip.base64sha256
+}
+
+# # aws lambda invoke --function-name py-lambda /dev/stdout
+# resource "aws_lambda_function" "py_lambda" {
+#   filename         = lambdazip_file.py_zip.output
+#   function_name    = "py-lambda"
+#   role             = aws_iam_role.py_lambda.arn
+#   handler          = "lambda_function.lambda_handler"
+#   source_code_hash = lambdazip_file.py_zip.base64sha256
+#   runtime          = "python3.13"
+#   timeout          = 60
+# }
+
+# resource "aws_iam_role" "py_lambda" {
+#   name = "py-lambda"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect    = "Allow"
+#         Principal = { Service = "lambda.amazonaws.com" }
+#         Action    = "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "py_lambda" {
+#   role       = aws_iam_role.py_lambda.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }
