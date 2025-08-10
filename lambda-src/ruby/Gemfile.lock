@@ -1,0 +1,18 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ruby_figlet (0.6.1)
+
+PLATFORMS
+  arm64-darwin-23
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  ruby_figlet
+
+RUBY VERSION
+   ruby 3.4.1p0
+
+BUNDLED WITH
+   2.6.1
