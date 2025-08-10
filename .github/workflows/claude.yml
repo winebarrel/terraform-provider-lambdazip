@@ -36,7 +36,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           timeout_minutes: "60"
-          custom_instructions: |-
+          direct_prompt: |-
             ## Role
             You are an expert code reviewer. You have access to tools to gather
             PR information and perform the review on GitHub. Use the available tools to
