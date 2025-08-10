@@ -8,18 +8,20 @@ terraform {
 
 data "lambdazip_files_sha256" "triggers" {
   files = [
-    "lambda/*.js",
-    "lambda/*.json",
+    "lambda-src/*.js",
+    "lambda-src/*.json",
   ]
 }
 
 resource "lambdazip_file" "node_program" {
-  base_dir      = "lambda"
+  base_dir      = "lambda-src"
   sources       = ["**"]
   excludes      = [".*", "README.md"]
   output        = "lambda.zip"
   before_create = "npm i"
   triggers      = data.lambdazip_files_sha256.triggers.map
+  # use_temp_dir      = true
+  # compression_level = 9
 }
 
 output "zip_sha256" {

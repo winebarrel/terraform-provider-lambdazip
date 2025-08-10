@@ -11,7 +11,7 @@ Update `base64sha256` attribute only when `triggers` attribute is updated.
 
 ```
 ./
-|-- lambda/
+|-- lambda-src/
 |   |-- index.js
 |   |-- node_modules/
 |   |-- package-lock.json
@@ -37,7 +37,7 @@ data "lambdazip_files_sha256" "triggers" {
 }
 
 resource "lambdazip_file" "app" {
-  base_dir      = "lambda"
+  base_dir      = "lambda-src"
   sources       = ["**"]
   excludes      = [".env"]
   output        = "lambda.zip"
@@ -61,7 +61,7 @@ resource "aws_lambda_function" "app" {
   role             = aws_iam_role.lambda_app_role.arn
   handler          = "index.handler"
   source_code_hash = lambdazip_file.app.base64sha256
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
 }
 
 resource "aws_iam_role" "lambda_app_role" {
