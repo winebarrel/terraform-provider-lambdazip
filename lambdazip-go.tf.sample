@@ -1,3 +1,4 @@
+# vim: syntax=terraform
 terraform {
   required_providers {
     lambdazip = {
