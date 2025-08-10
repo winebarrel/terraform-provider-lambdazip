@@ -1,3 +1,4 @@
+# vim: syntax=terraform
 locals {
   index_js = <<-EOT
     exports.handler = async () => {
