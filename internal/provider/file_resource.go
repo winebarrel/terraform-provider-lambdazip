@@ -237,7 +237,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 					errmsg += ":\n" + cmdout
 				}
 
-				resp.Diagnostics.AddError(fmt.Sprintf("Failed to run `%s`", beforeCreate), err.Error())
+				resp.Diagnostics.AddError("Failed to run 'before_create'", fmt.Sprintf(errmsg, beforeCreate, err))
 				return
 			}
 		}
