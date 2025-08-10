@@ -1,0 +1,56 @@
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+data "lambdazip_files_sha256" "go_triggers" {
+  files = [
+    "lambda-src/go/go.*",
+    "lambda-src/go/main.go",
+  ]
+}
+
+resource "lambdazip_file" "go_zip" {
+  base_dir      = "lambda-src/go"
+  sources       = ["bootstrap"]
+  output        = "go-lambda.zip"
+  before_create = "GOOS=linux GOARCH=amd64 go build -o bootstrap main.go"
+  triggers      = data.lambdazip_files_sha256.go_triggers.map
+}
+
+output "go_zip_sha256" {
+  value = lambdazip_file.go_zip.base64sha256
+}
+
+# # aws lambda invoke --function-name go-lambda /dev/stdout
+# resource "aws_lambda_function" "go_lambda" {
+#   filename         = lambdazip_file.go_zip.output
+#   function_name    = "go-lambda"
+#   role             = aws_iam_role.go_lambda.arn
+#   handler          = "my-handler"
+#   source_code_hash = lambdazip_file.go_zip.base64sha256
+#   runtime          = "provided.al2023"
+# }
+
+# resource "aws_iam_role" "go_lambda" {
+#   name = "go-lambda"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect    = "Allow"
+#         Principal = { Service = "lambda.amazonaws.com" }
+#         Action    = "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "go_lambda" {
+#   role       = aws_iam_role.go_lambda.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }
