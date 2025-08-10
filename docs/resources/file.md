@@ -101,4 +101,3 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 ### Read-Only
 
 - `base64sha256` (String)
-- `id` (String) The ID of this resource.

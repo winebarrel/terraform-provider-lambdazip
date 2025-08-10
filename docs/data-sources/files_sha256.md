@@ -51,5 +51,4 @@ resource "lambdazip_file" "app" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
 - `map` (Map of String)
