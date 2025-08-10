@@ -6,24 +6,54 @@ terraform {
   }
 }
 
-data "lambdazip_files_sha256" "triggers" {
+data "lambdazip_files_sha256" "js_triggers" {
   files = [
-    "lambda-src/*.js",
-    "lambda-src/*.json",
+    "lambda-src/js/*.mjs",
+    "lambda-src/js/*.json",
   ]
 }
 
-resource "lambdazip_file" "node_program" {
-  base_dir      = "lambda-src"
+resource "lambdazip_file" "js_zip" {
+  base_dir      = "lambda-src/js"
   sources       = ["**"]
   excludes      = [".*", "README.md"]
-  output        = "lambda.zip"
+  output        = "js-lambda.zip"
   before_create = "npm i"
-  triggers      = data.lambdazip_files_sha256.triggers.map
+  triggers      = data.lambdazip_files_sha256.js_triggers.map
   # use_temp_dir      = true
   # compression_level = 9
 }
 
-output "zip_sha256" {
-  value = lambdazip_file.node_program.base64sha256
+output "js_zip_sha256" {
+  value = lambdazip_file.js_zip.base64sha256
 }
+
+# # aws lambda invoke --function-name js-lambda /dev/stdout
+# resource "aws_lambda_function" "js_lambda" {
+#   filename         = lambdazip_file.js_zip.output
+#   function_name    = "js-lambda"
+#   role             = aws_iam_role.js_lambda.arn
+#   handler          = "index.handler"
+#   source_code_hash = lambdazip_file.js_zip.base64sha256
+#   runtime          = "nodejs22.x"
+# }
+
+# resource "aws_iam_role" "js_lambda" {
+#   name = "js-lambda"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect    = "Allow"
+#         Principal = { Service = "lambda.amazonaws.com" }
+#         Action    = "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "js_lambda" {
+#   role       = aws_iam_role.js_lambda.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }
