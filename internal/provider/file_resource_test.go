@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -548,6 +549,60 @@ func TestFiles_tempDir(t *testing.T) {
 						return nil
 					},
 				),
+			},
+		},
+	})
+}
+
+func TestContents_errBeforeCreate(t *testing.T) {
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.Mkdir("app/lib", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("app/world.rb", []byte("puts 'hello'"), 0755)
+	os.WriteFile("app/README.md", []byte("# hello.rb"), 0644)
+	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1 =====================================================
+			{
+				Config: `
+					resource "lambdazip_file" "my_app" {
+						base_dir      = "app"
+						sources       = ["**/*.rb"]
+						excludes      = [".*", "README.md"]
+						output        = "my-app.zip"
+						before_create = "sh -c 'echo ls: xxx: No such file or directory ; exit 100'"
+
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`exit status 100\noutput: ls: xxx: No such file or directory`),
+			},
+			// Step 2 =====================================================
+			{
+				Config: `
+					resource "lambdazip_file" "my_app" {
+						base_dir      = "app"
+						sources       = ["**/*.rb"]
+						excludes      = [".*", "README.md"]
+						output        = "my-app.zip"
+						before_create = "sh -c 'exit 101'"
+
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`exit status 101\noutput: \(empty\)`),
 			},
 		},
 	})

@@ -231,13 +231,15 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 			cmdout, err := cmd.Run(beforeCreate)
 
 			if err != nil {
-				errmsg := `"%s" failed - %w`
+				cmdout = strings.TrimSpace(cmdout)
 
-				if cmdout != "" {
-					errmsg += ":\n" + cmdout
+				if cmdout == "" {
+					cmdout = "(empty)"
 				}
 
-				resp.Diagnostics.AddError("Failed to run 'before_create'", fmt.Sprintf(errmsg, beforeCreate, err))
+				summary := fmt.Sprintf("Failed to run `%s`", beforeCreate)
+				detail := fmt.Sprintf("%s\noutput: %s", err, cmdout)
+				resp.Diagnostics.AddError(summary, detail)
 				return
 			}
 		}
