@@ -1,11 +1,11 @@
-package lambdazip_test
+package provider_test
 
 import (
 	"os"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestFilesSha256_basic(t *testing.T) {
@@ -21,8 +21,8 @@ func TestFilesSha256_basic(t *testing.T) {
 	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
@@ -106,14 +106,15 @@ func TestFilesSha256_notExist(t *testing.T) {
 	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
 				Config: `
 					data "lambdazip_files_sha256" "trigger" {
-						files = ["app/hello.rb"]
+						files           = ["app/hello.rb"]
+						allow_not_exist = false
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -126,7 +127,8 @@ func TestFilesSha256_notExist(t *testing.T) {
 			{
 				Config: `
 					data "lambdazip_files_sha256" "trigger" {
-						files = ["app/xhello.rb"]
+						files           = ["app/xhello.rb"]
+						allow_not_exist = false
 					}
 				`,
 				ExpectError: regexp.MustCompile(`pattern does not exist`),
@@ -154,8 +156,8 @@ func TestContentsSha256_basic(t *testing.T) {
 	defer os.Chdir(cwd)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{

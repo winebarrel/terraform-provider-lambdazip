@@ -1,11 +1,11 @@
-package lambdazip_test
+package provider_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,8 +26,8 @@ func TestFiles_basic(t *testing.T) {
 	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
@@ -215,8 +215,8 @@ func TestFiles_bestCompression(t *testing.T) {
 	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
@@ -273,8 +273,8 @@ func TestContents_basic(t *testing.T) {
 	os.Mkdir("app", 0755)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
@@ -372,8 +372,8 @@ func TestFiles_tempDir(t *testing.T) {
 	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testProviders,
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1 =====================================================
 			{
