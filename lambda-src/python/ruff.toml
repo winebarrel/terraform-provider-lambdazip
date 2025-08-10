@@ -1,0 +1,13 @@
+# https://docs.astral.sh/ruff/
+target-version = "py313"
+
+[lint]
+# https://docs.astral.sh/ruff/linter/
+select = [
+  "E", # pycodestyle
+  "F", # Pyflakes
+  "I", # isort
+]
+
+[format]
+quote-style = "double"
