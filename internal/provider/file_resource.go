@@ -247,7 +247,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		sources, err = glob.Glob(sources, excludes)
 
 		if err != nil {
-			resp.Diagnostics.AddError("Faild to glob files", err.Error())
+			resp.Diagnostics.AddError("Failed to glob files", err.Error())
 			return
 		}
 	}
@@ -266,7 +266,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	err = zip.ZipFile(sources, contents, output, compressionLevel)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Faild to zip files", err.Error())
+		resp.Diagnostics.AddError("Failed to zip files", err.Error())
 		return
 	}
 

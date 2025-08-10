@@ -121,7 +121,7 @@ func (d *FilesSha256DataSource) Read(ctx context.Context, req datasource.ReadReq
 		files, err := glob.Glob(files, excludes, globOpts...)
 
 		if err != nil {
-			resp.Diagnostics.AddError("Faild to glob files", err.Error())
+			resp.Diagnostics.AddError("Failed to glob files", err.Error())
 			return
 		}
 
