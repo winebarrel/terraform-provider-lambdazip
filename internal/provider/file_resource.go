@@ -245,7 +245,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		sources, err = glob.Glob(sources, excludes)
 
 		if err != nil {
-			resp.Diagnostics.AddError("Faild to grob files", err.Error())
+			resp.Diagnostics.AddError("Faild to glob files", err.Error())
 			return
 		}
 	}
