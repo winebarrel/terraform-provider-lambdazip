@@ -109,35 +109,27 @@ resource "lambdazip_file" "node_program" {
 }
 ```
 
-### Golang example
+## Examples by programming language
 
-```tf
-data "lambdazip_files_sha256" "triggers" {
-  files = ["lambda/*.go", "lambda/go.mod", "lambda/go.sum"]
-}
-
-resource "lambdazip_file" "app" {
-  base_dir      = "lambda"
-  sources       = ["bootstrap"]
-  output        = "lambda.zip"
-  before_create = "GOOS=linux GOARCH=amd64 go build -o bootstrap main.go"
-  triggers      = data.lambdazip_files_sha256.triggers.map
-}
-
-resource "aws_lambda_function" "app" {
-  filename         = lambdazip_file.app.output
-  function_name    = "my_func"
-  role             = aws_iam_role.lambda_app_role.arn
-  handler          = "my-handler"
-  source_code_hash = lambdazip_file.app.base64sha256
-  runtime          = "provided.al2023"
-}
-```
+* JavaScript
+    * https://github.com/winebarrel/terraform-provider-lambdazip/blob/main/lambdazip.tf.sample
+    * https://github.com/winebarrel/terraform-provider-lambdazip/tree/main/lambda-src/js
+* Go
+    * https://github.com/winebarrel/terraform-provider-lambdazip/blob/main/lambdazip-go.tf.sample
+    * https://github.com/winebarrel/terraform-provider-lambdazip/tree/main/lambda-src/go
+* Python
+    * https://github.com/winebarrel/terraform-provider-lambdazip/blob/main/lambdazip-python.tf.sample
+    * https://github.com/winebarrel/terraform-provider-lambdazip/tree/main/lambda-src/python
+* Ruby
+    * https://github.com/winebarrel/terraform-provider-lambdazip/blob/main/lambdazip-ruby.tf.sample
+    * https://github.com/winebarrel/terraform-provider-lambdazip/tree/main/lambda-src/ruby
+* Rust
+    * https://github.com/winebarrel/terraform-provider-lambdazip/blob/main/lambdazip-rust.tf.sample
+    * https://github.com/winebarrel/terraform-provider-lambdazip/tree/main/lambda-src/rust
 
 > [!note]
 > Go v1.21 or higher recommended.
 > see https://go.dev/blog/rebuild
-
 
 ## Run locally for development
 
