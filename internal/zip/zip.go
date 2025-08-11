@@ -14,15 +14,14 @@ func Strip(path string, n int) string {
 		return path
 	}
 
-	sep := string(os.PathSeparator)
-	path = strings.TrimPrefix(path, sep)
-	dirs := strings.Split(path, sep)
+	path = strings.TrimPrefix(path, "/")
+	dirs := strings.Split(path, "/")
 
 	if n >= len(dirs) {
 		return ""
 	}
 
-	return strings.Join(dirs[n:], sep)
+	return strings.Join(dirs[n:], "/")
 }
 
 func ZipFile(files []string, contents map[string]string, name string, level int, strip int) error {
