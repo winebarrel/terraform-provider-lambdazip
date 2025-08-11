@@ -13,7 +13,9 @@ resource "lambdazip_file" "app" {
   excludes      = [".env"]
   output        = "lambda.zip"
   before_create = "npm i"
-  # use_temp_dir  = true
+  # use_temp_dir      = true
+  # compression_level = 9
+  # strip_components  = 1
 
   contents = {
     extra_file = "Zap Zap Zap"

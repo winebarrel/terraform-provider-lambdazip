@@ -23,6 +23,7 @@ resource "lambdazip_file" "js_zip" {
   triggers      = data.lambdazip_files_sha256.js_triggers.map
   # use_temp_dir      = true
   # compression_level = 9
+  # strip_components  = 1
 }
 
 output "js_zip_sha256" {

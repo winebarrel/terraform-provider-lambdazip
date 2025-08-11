@@ -607,3 +607,126 @@ func TestContents_errBeforeCreate(t *testing.T) {
 		},
 	})
 }
+
+func TestFiles_removePrefix(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.Mkdir("app/lib", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("app/world.rb", []byte("puts 'hello'"), 0755)
+	os.WriteFile("app/README.md", []byte("# hello.rb"), 0644)
+	os.WriteFile("app/lib/const.rb", []byte("A = 100"), 0644)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1 =====================================================
+			{
+				Config: `
+					resource "lambdazip_file" "my_app" {
+						base_dir         = "app"
+						sources          = ["**/*.rb", "**/*.txt"]
+						excludes         = [".*", "README.md"]
+						output           = "my-app.zip"
+						before_create    = "touch lib/exec.txt"
+						strip_components = 1
+
+						triggers = {
+							hello_rb = filesha256("app/hello.rb"),
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "2"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.0", "**/*.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.1", "**/*.txt"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.#", "2"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.0", ".*"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "excludes.1", "README.md"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "before_create", "touch lib/exec.txt"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "1Kjg4Dzp2HopXIgUaSQMqXoqcQ+0l01blVXUpnZ4De8="),
+					func(*terraform.State) error {
+						buf, err := os.ReadFile("my-app.zip")
+						require.NoError(err)
+						assert.Equal("1Kjg4Dzp2HopXIgUaSQMqXoqcQ+0l01blVXUpnZ4De8=", base64Sha256(buf))
+						assert.True(isFileExists("app/lib/exec.txt"))
+						list, err := listZip(buf)
+						require.NoError(err)
+						assert.Equal([]string{"const.rb", "exec.txt"}, list)
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestContents_removePrefix(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1 =====================================================
+			{
+				Config: `
+					resource "lambdazip_file" "my_app" {
+						base_dir = "app"
+						contents = {
+							"app/hello.rb"     = "puts 'world'"
+							"app/world.rb"     = "puts 'hello'"
+							"app/README.md"    = "# hello.rb"
+							"app/lib/const.rb" = "A = 100"
+						}
+						output           = "my-app.zip"
+						strip_components = 1
+
+						triggers = {
+							hello_rb = "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base_dir", "app"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "sources.#", "0"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.%", "4"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", `contents.app/hello.rb`, "puts 'world'"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/hello.rb", "puts 'world'"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/README.md", "# hello.rb"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "contents.app/lib/const.rb", "A = 100"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "gAG8+V7J4hO7MFdEE+qy4XPr4ab9yGh8iRYW31ElfZk="),
+					func(*terraform.State) error {
+						buf, err := os.ReadFile("my-app.zip")
+						require.NoError(err)
+						assert.Equal("gAG8+V7J4hO7MFdEE+qy4XPr4ab9yGh8iRYW31ElfZk=", base64Sha256(buf))
+						list, err := listZip(buf)
+						require.NoError(err)
+						assert.Equal([]string{"README.md", "hello.rb", "lib/const.rb", "world.rb"}, list)
+						return nil
+					},
+				),
+			},
+		},
+	})
+}

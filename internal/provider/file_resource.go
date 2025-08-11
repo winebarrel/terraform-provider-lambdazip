@@ -49,6 +49,7 @@ type FileResourceModel struct {
 	Base64sha256     types.String   `tfsdk:"base64sha256"`
 	UseTempDir       types.Bool     `tfsdk:"use_temp_dir"`
 	CompressionLevel types.Int32    `tfsdk:"compression_level"`
+	StripComponents  types.Int32    `tfsdk:"strip_components"`
 }
 
 func (r *FileResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -94,7 +95,7 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
 					listvalidator.SizeAtLeast(1),
-					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				},
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
@@ -118,7 +119,7 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Validators: []validator.Map{
 					mapvalidator.NoNullValues(),
 					mapvalidator.SizeAtLeast(1),
-					mapvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+					mapvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				},
 				PlanModifiers: []planmodifier.Map{
 					mapplanmodifier.RequiresReplace(),
@@ -139,6 +140,12 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Default:  int32default.StaticInt32(-1),
 				Validators: []validator.Int32{
 					int32validator.Between(-1, 9),
+				},
+			},
+			"strip_components": schema.Int32Attribute{
+				Optional: true,
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
 				},
 			},
 		},
@@ -166,6 +173,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	baseDir := plan.BaseDir.ValueString()
 	useTempDir := plan.UseTempDir.ValueBool()
 	compressionLevel := int(plan.CompressionLevel.ValueInt32())
+	stripComponents := int(plan.StripComponents.ValueInt32())
 	cwd, err := os.Getwd()
 
 	if err != nil {
@@ -263,7 +271,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		}
 	}
 
-	err = zip.ZipFile(sources, contents, output, compressionLevel)
+	err = zip.ZipFile(sources, contents, output, compressionLevel, stripComponents)
 
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to zip files", err.Error())
