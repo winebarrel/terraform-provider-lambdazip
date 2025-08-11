@@ -4,7 +4,6 @@ use serde_json::Value;
 pub(crate) async fn function_handler(event: LambdaEvent<Value>) -> Result<String, Error> {
     let payload = event.payload;
     let retval = format!("Payload: {:?}", payload);
-
     Ok(retval)
 }
 
