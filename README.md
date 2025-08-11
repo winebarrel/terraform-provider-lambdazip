@@ -24,7 +24,7 @@ terraform {
   required_providers {
     lambdazip = {
       source  = "winebarrel/lambdazip"
-      version = ">= 0.10.0"
+      version = ">= 0.10.1"
     }
   }
 }
@@ -45,6 +45,7 @@ resource "lambdazip_file" "app" {
   triggers      = data.lambdazip_files_sha256.triggers.map
   # use_temp_dir      = true
   # compression_level = 9
+  # strip_components  = 1
 
   # triggers = {
   #   for i in [

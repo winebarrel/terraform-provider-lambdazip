@@ -44,7 +44,7 @@ func TestZip(t *testing.T) {
 	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
 
 	var out bytes.Buffer
-	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, -1)
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, -1, 0)
 	require.NoError(err)
 
 	list := listZip(t, out.Bytes())
@@ -63,14 +63,14 @@ func TestZipWithBestCompression(t *testing.T) {
 	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
 
 	var out bytes.Buffer
-	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, flate.BestCompression)
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, nil, &out, flate.BestCompression, 0)
 	require.NoError(err)
 
 	list := listZip(t, out.Bytes())
 	assert.Equal([]string{"hello.rb", "world.rb"}, list)
 }
 
-func TestZipWithContents(t *testing.T) {
+func TestZipContents(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -87,7 +87,7 @@ func TestZipWithContents(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	err := zip.Zip([]string{"hello.rb", "world.rb"}, contents, &out, -1)
+	err := zip.Zip([]string{"hello.rb", "world.rb"}, contents, &out, -1, 0)
 	require.NoError(err)
 
 	list := listZip(t, out.Bytes())
@@ -105,7 +105,7 @@ func TestZipFile(t *testing.T) {
 	os.WriteFile("hello.rb", []byte("puts 'world'"), 0755)
 	os.WriteFile("world.rb", []byte("puts 'hello'"), 0755)
 
-	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, nil, "app.zip", -1)
+	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, nil, "app.zip", -1, 0)
 	require.NoError(err)
 	buf, err := os.ReadFile("app.zip")
 	require.NoError(err)
@@ -130,11 +130,82 @@ func TestZipFileWithContents(t *testing.T) {
 		"world2.rb": "puts 'hello2'",
 	}
 
-	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, contents, "app.zip", -1)
+	err := zip.ZipFile([]string{"hello.rb", "world.rb"}, contents, "app.zip", -1, 0)
 	require.NoError(err)
 	buf, err := os.ReadFile("app.zip")
 	require.NoError(err)
 
 	list := listZip(t, buf)
 	assert.Equal([]string{"hello.rb", "hello2.rb", "world.rb", "world2.rb"}, list)
+}
+
+func TestZipWithRemovePrefix(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("app/world.rb", []byte("puts 'hello'"), 0755)
+
+	var out bytes.Buffer
+	err := zip.Zip([]string{"app/hello.rb", "app/world.rb"}, nil, &out, -1, 1)
+	require.NoError(err)
+
+	list := listZip(t, out.Bytes())
+	assert.Equal([]string{"hello.rb", "world.rb"}, list)
+}
+
+func TestZipContentsWithRemovePrefix(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("app", 0755)
+	os.WriteFile("app/hello.rb", []byte("puts 'world'"), 0755)
+	os.WriteFile("app/world.rb", []byte("puts 'hello'"), 0755)
+
+	contents := map[string]string{
+		"app/hello2.rb": "puts 'world2'",
+		"app/world2.rb": "puts 'hello2'",
+	}
+
+	var out bytes.Buffer
+	err := zip.Zip([]string{"app/hello.rb", "app/world.rb"}, contents, &out, -1, 1)
+	require.NoError(err)
+
+	list := listZip(t, out.Bytes())
+	assert.Equal([]string{"hello.rb", "hello2.rb", "world.rb", "world2.rb"}, list)
+}
+
+func TestStrip(t *testing.T) {
+	assert := assert.New(t)
+
+	tt := []struct {
+		path     string
+		n        int
+		expected string
+	}{
+		{path: "foo/bar/zoo", n: 0, expected: "foo/bar/zoo"},
+		{path: "foo/bar/zoo", n: 1, expected: "bar/zoo"},
+		{path: "foo/bar/zoo", n: 2, expected: "zoo"},
+		{path: "foo/bar/zoo", n: 3, expected: ""},
+		{path: "foo/bar/zoo", n: 4, expected: ""},
+		{path: "/foo/bar/zoo", n: 0, expected: "/foo/bar/zoo"},
+		{path: "/foo/bar/zoo", n: 1, expected: "bar/zoo"},
+		{path: "/foo/bar/zoo", n: 2, expected: "zoo"},
+		{path: "/foo/bar/zoo", n: 3, expected: ""},
+		{path: "/foo/bar/zoo", n: 4, expected: ""},
+	}
+
+	for _, t := range tt {
+		actual := zip.Strip(t.path, t.n)
+		assert.Equal(t.expected, actual)
+	}
 }

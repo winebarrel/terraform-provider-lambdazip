@@ -1,0 +1,58 @@
+# vim: syntax=terraform
+terraform {
+  required_providers {
+    lambdazip = {
+      source = "winebarrel/lambdazip"
+    }
+  }
+}
+
+data "lambdazip_files_sha256" "rs_triggers" {
+  files = [
+    "lambda-src/rust/*.rs",
+    "lambda-src/rust/Cargo.*",
+  ]
+}
+
+resource "lambdazip_file" "rs_zip" {
+  base_dir         = "lambda-src/rust"
+  sources          = ["target/lambda/rs-lambda/bootstrap"]
+  output           = "rs-lambda.zip"
+  before_create    = "cargo lambda build --release"
+  triggers         = data.lambdazip_files_sha256.rs_triggers.map
+  strip_components = 3
+}
+
+output "rs_zip_sha256" {
+  value = lambdazip_file.rs_zip.base64sha256
+}
+
+# # aws lambda invoke --function-name rs-lambda /dev/stdout
+# resource "aws_lambda_function" "rs_lambda" {
+#   filename         = lambdazip_file.rs_zip.output
+#   function_name    = "rs-lambda"
+#   role             = aws_iam_role.rs_lambda.arn
+#   handler          = "my-handler"
+#   source_code_hash = lambdazip_file.rs_zip.base64sha256
+#   runtime          = "provided.al2023"
+# }
+
+# resource "aws_iam_role" "rs_lambda" {
+#   name = "rs-lambda"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect    = "Allow"
+#         Principal = { Service = "lambda.amazonaws.com" }
+#         Action    = "sts:AssumeRole"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "rs_lambda" {
+#   role       = aws_iam_role.rs_lambda.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# }

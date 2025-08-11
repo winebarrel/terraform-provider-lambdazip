@@ -6,9 +6,25 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 )
 
-func ZipFile(files []string, contents map[string]string, name string, level int) error {
+func Strip(path string, n int) string {
+	if n == 0 {
+		return path
+	}
+
+	path = strings.TrimPrefix(path, "/")
+	dirs := strings.Split(path, "/")
+
+	if n >= len(dirs) {
+		return ""
+	}
+
+	return strings.Join(dirs[n:], "/")
+}
+
+func ZipFile(files []string, contents map[string]string, name string, level int, strip int) error {
 	f, err := os.Create(name)
 
 	if err != nil {
@@ -17,10 +33,10 @@ func ZipFile(files []string, contents map[string]string, name string, level int)
 
 	defer f.Close()
 
-	return Zip(files, contents, f, level)
+	return Zip(files, contents, f, level, strip)
 }
 
-func Zip(files []string, contents map[string]string, out io.Writer, level int) error {
+func Zip(files []string, contents map[string]string, out io.Writer, level int, strip int) error {
 	w := arzip.NewWriter(out)
 
 	w.RegisterCompressor(arzip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
@@ -28,7 +44,13 @@ func Zip(files []string, contents map[string]string, out io.Writer, level int) e
 	})
 
 	for _, name := range files {
-		f, err := w.Create(name)
+		stripped := Strip(name, strip)
+
+		if stripped == "" {
+			continue
+		}
+
+		f, err := w.Create(stripped)
 
 		if err != nil {
 			return err
@@ -61,7 +83,13 @@ func Zip(files []string, contents map[string]string, out io.Writer, level int) e
 	sort.Slice(contentsList, func(i, j int) bool { return contentsList[i].name < contentsList[j].name })
 
 	for _, c := range contentsList {
-		f, err := w.Create(c.name)
+		stripped := Strip(c.name, strip)
+
+		if stripped == "" {
+			continue
+		}
+
+		f, err := w.Create(stripped)
 
 		if err != nil {
 			return err

@@ -48,7 +48,7 @@ func (d *FilesSha256DataSource) Schema(ctx context.Context, req datasource.Schem
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
 					listvalidator.SizeAtLeast(1),
-					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				},
 			},
 			"contents": schema.MapAttribute{
@@ -57,7 +57,7 @@ func (d *FilesSha256DataSource) Schema(ctx context.Context, req datasource.Schem
 				Validators: []validator.Map{
 					mapvalidator.NoNullValues(),
 					mapvalidator.SizeAtLeast(1),
-					mapvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+					mapvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				},
 			},
 			"excludes": schema.ListAttribute{
@@ -66,7 +66,7 @@ func (d *FilesSha256DataSource) Schema(ctx context.Context, req datasource.Schem
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
 					listvalidator.SizeAtLeast(1),
-					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(0)),
+					listvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 				},
 			},
 			"map": schema.MapAttribute{
