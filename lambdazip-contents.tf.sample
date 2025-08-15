@@ -22,7 +22,6 @@ data "lambdazip_files_sha256" "triggers" {
 }
 
 resource "lambdazip_file" "node_program" {
-  base_dir = "lambda-src"
   contents = {
     "index.js" = local.index_js
   }
