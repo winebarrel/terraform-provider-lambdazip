@@ -100,8 +100,7 @@ locals {
 }
 
 resource "lambdazip_file" "node_program" {
-  base_dir = "lambda"
-  output   = "lambda.zip"
+  output = "lambda.zip"
 
   contents = {
     "index.js" = local.index_js
