@@ -24,7 +24,7 @@ terraform {
   required_providers {
     lambdazip = {
       source  = "winebarrel/lambdazip"
-      version = ">= 0.10.1"
+      version = ">= 0.11"
     }
   }
 }
