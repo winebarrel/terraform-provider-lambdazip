@@ -13,6 +13,9 @@ var (
 	version string = "dev"
 )
 
+//go:generate terraform fmt -recursive examples/
+//go:generate go tool github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate -provider-name lambdazip
+
 func main() {
 	var debug bool
 
