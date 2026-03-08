@@ -15,8 +15,7 @@ description: |-
 terraform {
   required_providers {
     lambdazip = {
-      source  = "winebarrel/lambdazip"
-      version = ">= 0.10.1"
+      source = "winebarrel/lambdazip"
     }
   }
 }
