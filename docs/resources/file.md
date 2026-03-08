@@ -103,4 +103,5 @@ resource "aws_iam_role_policy_attachment" "lambda_app_role" {
 
 ### Read-Only
 
+- `base64md5` (String)
 - `base64sha256` (String)
