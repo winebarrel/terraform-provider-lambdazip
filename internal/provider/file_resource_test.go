@@ -57,6 +57,7 @@ func TestFiles_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "a6p1iUHprlLD6/MDM7kHa9dhCuOmcPiBmU+JShrJ4Ro="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "71XQ6nxelFFDOT2Z911yeA=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -102,6 +103,7 @@ func TestFiles_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "a6p1iUHprlLD6/MDM7kHa9dhCuOmcPiBmU+JShrJ4Ro="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "71XQ6nxelFFDOT2Z911yeA=="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
 						assert.False(isFileExists("app/exec.txt"))
@@ -140,6 +142,7 @@ func TestFiles_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "55024qLWGJdd9NUOXG8Y/4xpeWuckpVC9VJE1ZZPQtA="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "PZ4LSRZZ19Znln0I4hFEAA=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -189,6 +192,7 @@ func TestFiles_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "55024qLWGJdd9NUOXG8Y/4xpeWuckpVC9VJE1ZZPQtA="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "PZ4LSRZZ19Znln0I4hFEAA=="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
 						assert.False(isFileExists("app/exec.txt"))
@@ -247,6 +251,7 @@ func TestFiles_bestCompression(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "9"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "a6p1iUHprlLD6/MDM7kHa9dhCuOmcPiBmU+JShrJ4Ro="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "71XQ6nxelFFDOT2Z911yeA=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -306,6 +311,7 @@ func TestContents_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3RvIR+rYfQjlytlx/hGPe2drWNSu59499c3uAKz6Kh4="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "a9+xgv4ENWPVe3EyG0cf+g=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -342,6 +348,7 @@ func TestContents_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckNoResourceAttr("lambdazip_file.my_app", "triggers"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3RvIR+rYfQjlytlx/hGPe2drWNSu59499c3uAKz6Kh4="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "a9+xgv4ENWPVe3EyG0cf+g=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -406,6 +413,7 @@ func TestFiles_tempDir(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "use_temp_dir", "true"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3mKBu6qleIlPZxj0rzLcS52hB1p0K2L76H9MZb+h2kk="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "xv2nLPh7HCogSMWKZ+Lkog=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -452,6 +460,7 @@ func TestFiles_tempDir(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "use_temp_dir", "true"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "3mKBu6qleIlPZxj0rzLcS52hB1p0K2L76H9MZb+h2kk="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "xv2nLPh7HCogSMWKZ+Lkog=="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
 						assert.False(isFileExists("app/exec.txt"))
@@ -493,6 +502,7 @@ func TestFiles_tempDir(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "use_temp_dir", "true"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "mR/NIFGb1EjnvdQWtPZTA3jnrDUGo/rPX++UGs1G9XI="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "QPWvDtIecJEW7s1KWh/stA=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -543,6 +553,7 @@ func TestFiles_tempDir(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "use_temp_dir", "true"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "6740287d0049734d6fe501a11d8572ba1befdc690d08d891db539d2f8a9d7273"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "mR/NIFGb1EjnvdQWtPZTA3jnrDUGo/rPX++UGs1G9XI="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "QPWvDtIecJEW7s1KWh/stA=="),
 					func(*terraform.State) error {
 						assert.False(isFileExists("my-app.zip"))
 						assert.False(isFileExists("app/exec.txt"))
@@ -656,6 +667,7 @@ func TestFiles_removePrefix(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "compression_level", "-1"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "1Kjg4Dzp2HopXIgUaSQMqXoqcQ+0l01blVXUpnZ4De8="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "rFr58zR6s4VEMXZU5IQ8Ng=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)
@@ -716,6 +728,7 @@ func TestContents_removePrefix(t *testing.T) {
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "output", "my-app.zip"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "triggers.hello_rb", "06db2c7a260efaf6e2e3f4c635c83506f1f40f6d3898e0e6025e3e55f44ddebe"),
 					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64sha256", "gAG8+V7J4hO7MFdEE+qy4XPr4ab9yGh8iRYW31ElfZk="),
+					resource.TestCheckResourceAttr("lambdazip_file.my_app", "base64md5", "ARsi1j0/srIiuzyZo2Ywnw=="),
 					func(*terraform.State) error {
 						buf, err := os.ReadFile("my-app.zip")
 						require.NoError(err)

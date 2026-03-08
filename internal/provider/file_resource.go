@@ -47,6 +47,7 @@ type FileResourceModel struct {
 	BeforeCreate     types.String   `tfsdk:"before_create"`
 	Triggers         types.Map      `tfsdk:"triggers"`
 	Base64sha256     types.String   `tfsdk:"base64sha256"`
+	Base64md5        types.String   `tfsdk:"base64md5"`
 	UseTempDir       types.Bool     `tfsdk:"use_temp_dir"`
 	CompressionLevel types.Int32    `tfsdk:"compression_level"`
 	StripComponents  types.Int32    `tfsdk:"strip_components"`
@@ -126,6 +127,12 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				},
 			},
 			"base64sha256": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"base64md5": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -286,6 +293,16 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	plan.Base64sha256 = types.StringValue(base64sha256)
+
+	base64md5, err := hash.Base64Md5(output)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to calculate md5sum", err.Error())
+		return
+	}
+
+	plan.Base64md5 = types.StringValue(base64md5)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
