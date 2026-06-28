@@ -118,17 +118,28 @@ func (d *FilesSha256DataSource) Read(ctx context.Context, req datasource.ReadReq
 			globOpts = append(globOpts, doublestar.WithFailOnPatternNotExist())
 		}
 
-		files, err := glob.Glob(files, excludes, globOpts...)
+		// glob and hashing read cwd-relative paths, so they must not run while a
+		// resource Create has chdir'd elsewhere. Share chdirMu as a reader.
+		func() {
+			chdirMu.RLock()
+			defer chdirMu.RUnlock()
 
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to glob files", err.Error())
-			return
-		}
+			globbed, err := glob.Glob(files, excludes, globOpts...)
 
-		mFiles, err = hash.Sha256Map(files)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to glob files", err.Error())
+				return
+			}
 
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to calculate sha256sum", err.Error())
+			mFiles, err = hash.Sha256Map(globbed)
+
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to calculate sha256sum", err.Error())
+				return
+			}
+		}()
+
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
@@ -137,7 +148,12 @@ func (d *FilesSha256DataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	if len(data.Contents.Elements()) >= 1 {
 		elements := make(map[string]types.String, len(data.Contents.Elements()))
-		data.Contents.ElementsAs(ctx, &elements, false)
+		resp.Diagnostics.Append(data.Contents.ElementsAs(ctx, &elements, false)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		dataByName := map[string]string{}
 
 		for name, data := range elements {
