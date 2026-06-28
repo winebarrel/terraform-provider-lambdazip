@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -30,6 +31,14 @@ import (
 )
 
 var _ resource.ResourceWithConfigValidators = &FileResource{}
+
+// chdirMu guards the process-wide working directory. Terraform runs a single
+// provider instance's operations concurrently in one process, so without this
+// lock concurrent builds race on cwd and produce cross-contaminated zips.
+// Create mutates cwd via os.Chdir and takes the write lock; operations that
+// only read cwd-relative paths (the files_sha256 data source) take the read
+// lock so they cannot observe a directory a concurrent Create has chdir'd into.
+var chdirMu sync.RWMutex
 
 func NewFileResource() resource.Resource {
 	return &FileResource{}
@@ -181,107 +190,136 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	useTempDir := plan.UseTempDir.ValueBool()
 	compressionLevel := int(plan.CompressionLevel.ValueInt32())
 	stripComponents := int(plan.StripComponents.ValueInt32())
-	cwd, err := os.Getwd()
 
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to get current directory", err.Error())
-		return
-	}
+	// Build the zip under a lock. Everything in here depends on the process-wide
+	// working directory (os.Getwd, os.Chdir, cwd-relative glob and file reads),
+	// so it must not run concurrently with another resource's build. os.Getwd is
+	// read inside the lock so no other goroutine has chdir'd away, and the cwd is
+	// restored by deferred os.Chdir before the lock is released. Hashing and
+	// state writes below use the absolute output path and stay outside the lock.
+	func() {
+		chdirMu.Lock()
+		defer chdirMu.Unlock()
 
-	if !strings.HasPrefix(output, "/") {
-		output = filepath.Join(cwd, output)
-	}
-
-	if baseDir != "" {
-		err = os.Chdir(baseDir)
+		cwd, err := os.Getwd()
 
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to change current working directory", err.Error())
+			resp.Diagnostics.AddError("Failed to get current directory", err.Error())
 			return
 		}
 
-		defer os.Chdir(cwd) //nolint:errcheck
-	}
-
-	if useTempDir {
-		tempDir, err := os.MkdirTemp("", "lambdazip")
-
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to create temporary directory", err.Error())
-			return
+		// Restore cwd before the lock is released. A failed restore would leave
+		// the process in the wrong directory and break later operations, so it
+		// is reported instead of ignored.
+		restoreCwd := func() {
+			if err := os.Chdir(cwd); err != nil {
+				resp.Diagnostics.AddError("Failed to restore current working directory", err.Error())
+			}
 		}
 
-		defer os.RemoveAll(tempDir)
-		err = cp.Copy(".", tempDir)
-
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to copy files to temporary directory", err.Error())
-			return
+		if !filepath.IsAbs(output) {
+			output = filepath.Join(cwd, output)
 		}
 
-		err = os.Chdir(tempDir)
-
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to change current working directory", err.Error())
-			return
-		}
-
-		defer os.Chdir(cwd) //nolint:errcheck
-	}
-
-	sources := []string{}
-
-	if len(plan.Sources) >= 1 {
-		for _, pat := range plan.Sources {
-			sources = append(sources, pat.ValueString())
-		}
-
-		excludes := []string{}
-
-		for _, pat := range plan.Excludes {
-			excludes = append(excludes, pat.ValueString())
-		}
-
-		if beforeCreate := plan.BeforeCreate.ValueString(); beforeCreate != "" {
-			cmdout, err := cmd.Run(beforeCreate)
+		if baseDir != "" {
+			err = os.Chdir(baseDir)
 
 			if err != nil {
-				cmdout = strings.TrimSpace(cmdout)
+				resp.Diagnostics.AddError("Failed to change current working directory", err.Error())
+				return
+			}
 
-				if cmdout == "" {
-					cmdout = "(empty)"
+			defer restoreCwd()
+		}
+
+		if useTempDir {
+			tempDir, err := os.MkdirTemp("", "lambdazip")
+
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to create temporary directory", err.Error())
+				return
+			}
+
+			defer os.RemoveAll(tempDir)
+			err = cp.Copy(".", tempDir)
+
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to copy files to temporary directory", err.Error())
+				return
+			}
+
+			err = os.Chdir(tempDir)
+
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to change current working directory", err.Error())
+				return
+			}
+
+			defer restoreCwd()
+		}
+
+		sources := []string{}
+
+		if len(plan.Sources) >= 1 {
+			for _, pat := range plan.Sources {
+				sources = append(sources, pat.ValueString())
+			}
+
+			excludes := []string{}
+
+			for _, pat := range plan.Excludes {
+				excludes = append(excludes, pat.ValueString())
+			}
+
+			if beforeCreate := plan.BeforeCreate.ValueString(); beforeCreate != "" {
+				cmdout, err := cmd.Run(beforeCreate)
+
+				if err != nil {
+					cmdout = strings.TrimSpace(cmdout)
+
+					if cmdout == "" {
+						cmdout = "(empty)"
+					}
+
+					summary := fmt.Sprintf("Failed to run `%s`", beforeCreate)
+					detail := fmt.Sprintf("%s\noutput: %s", err, cmdout)
+					resp.Diagnostics.AddError(summary, detail)
+					return
 				}
+			}
 
-				summary := fmt.Sprintf("Failed to run `%s`", beforeCreate)
-				detail := fmt.Sprintf("%s\noutput: %s", err, cmdout)
-				resp.Diagnostics.AddError(summary, detail)
+			sources, err = glob.Glob(sources, excludes)
+
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to glob files", err.Error())
 				return
 			}
 		}
 
-		sources, err = glob.Glob(sources, excludes)
+		contents := map[string]string{}
+
+		if len(plan.Contents.Elements()) >= 1 {
+			elements := make(map[string]types.String, len(plan.Contents.Elements()))
+			resp.Diagnostics.Append(plan.Contents.ElementsAs(ctx, &elements, false)...)
+
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			for name, data := range elements {
+				contents[name] = data.ValueString()
+			}
+		}
+
+		err = zip.ZipFile(sources, contents, output, compressionLevel, stripComponents)
 
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to glob files", err.Error())
+			resp.Diagnostics.AddError("Failed to zip files", err.Error())
 			return
 		}
-	}
+	}()
 
-	contents := map[string]string{}
-
-	if len(plan.Contents.Elements()) >= 1 {
-		elements := make(map[string]types.String, len(plan.Contents.Elements()))
-		plan.Contents.ElementsAs(ctx, &elements, false)
-
-		for name, data := range elements {
-			contents[name] = data.ValueString()
-		}
-	}
-
-	err = zip.ZipFile(sources, contents, output, compressionLevel, stripComponents)
-
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to zip files", err.Error())
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

@@ -743,3 +743,66 @@ func TestContents_removePrefix(t *testing.T) {
 		},
 	})
 }
+
+// TestFiles_concurrent creates two lambdazip_file resources with different
+// base_dir values in a single apply, which Terraform builds concurrently. It
+// guards against the cwd race where parallel builds produced zips with the
+// wrong contents. With the serialization in place each zip contains only its
+// own files.
+func TestFiles_concurrent(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir(t.TempDir())
+	defer os.Chdir(cwd)
+
+	os.Mkdir("a", 0755)
+	os.WriteFile("a/a1.txt", []byte("a1"), 0644)
+	os.WriteFile("a/a2.txt", []byte("a2"), 0644)
+	os.Mkdir("b", 0755)
+	os.WriteFile("b/b1.txt", []byte("b1"), 0644)
+	os.WriteFile("b/b2.txt", []byte("b2"), 0644)
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "lambdazip_file" "a" {
+						base_dir      = "a"
+						sources       = ["**/*.txt"]
+						output        = "a.zip"
+						before_create = "sleep 1"
+						use_temp_dir  = true
+					}
+
+					resource "lambdazip_file" "b" {
+						base_dir      = "b"
+						sources       = ["**/*.txt"]
+						output        = "b.zip"
+						before_create = "sleep 1"
+						use_temp_dir  = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					func(*terraform.State) error {
+						bufA, err := os.ReadFile("a.zip")
+						require.NoError(err)
+						listA, err := listZip(bufA)
+						require.NoError(err)
+						assert.Equal([]string{"a1.txt", "a2.txt"}, listA)
+
+						bufB, err := os.ReadFile("b.zip")
+						require.NoError(err)
+						listB, err := listZip(bufB)
+						require.NoError(err)
+						assert.Equal([]string{"b1.txt", "b2.txt"}, listB)
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
