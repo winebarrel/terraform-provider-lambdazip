@@ -1,5 +1,5 @@
 module go-lambda
 
-go 1.24.6
+go 1.26
 
-require github.com/aws/aws-lambda-go v1.54.0
+require github.com/aws/aws-lambda-go v1.55.0
